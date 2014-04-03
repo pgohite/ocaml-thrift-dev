@@ -31,29 +31,44 @@ let float = digit* frac? exp?
 let white = [' ' '\t']+
 let newline = '\r' | '\n' | "\r\n"
 let ident = ['a'-'z' 'A'-'Z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
+let func_ident = ident ['(']
 
 rule read =
   parse
   | white       { read lexbuf }
   | newline     { next_line lexbuf; read lexbuf }
   | int as num  { INT (int_of_string num) }
-  | "bool"      { BOOL }
-  | "byte"      { BYTE }
-  | "i8"        { INT8 }
-  | "i16"       { INT16 }
-  | "i32"       { INT32 }
-  | "typedef"   { TYPEDEF }
-  | "struct"    { STRUCT }
-  | "required"  { REQUIRED }
-  | "optional"  { OPTIONAL }
-  | ident as id { ID id }  
+  | "bool"      { TYPE_BOOL }
+  | "byte"      { TYPE_BYTE }
+  | "i8"        { TYPE_INT8 }
+  | "i16"       { TYPE_INT16 }
+  | "i32"       { TYPE_INT32 }
+  | "string"    { TYPE_STRING }
+  | "void"      { TYPE_VOID }
+
+  | "typedef"   { DEF_TYPEDEF }
+  | "struct"    { DEF_STRUCT }
+  | "enum"      { DEF_ENUM }
+  | "service"   { DEF_SERVICE }
+
+  | "required"  { FLD_REQUIRED }
+  | "optional"  { FLD_OPTIONAL }
+  | "oneway"    { DEF_ONEWAY }
+  
+  | ident as id      { ID id }  
+  | func_ident as id { FID id }  
+
   | '"'         { read_string (Buffer.create 17) lexbuf }
-  | '{'         { LEFT_BRACE }
-  | '}'         { RIGHT_BRACE }
+  | '{'         { LEFT_CURLY }
+  | '}'         { RIGHT_CURLY }
+  | '('         { LEFT_BRACE }
+  | ')'         { RIGHT_BRACE }
   | '['         { LEFT_BRACK }
   | ']'         { RIGHT_BRACK }
   | ':'         { COLON }
   | ','         { COMMA }
+  | '='         { EQUAL }
+
   | _ { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf)) }
   | eof      { EOF }
 

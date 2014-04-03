@@ -8,10 +8,11 @@
  
 type identifier =
     | Ident of string
+
 type literal = 
     | Literal of string
 
-type basetype =
+type base_type =
     | Bool 
     | Byte 
     | Int16
@@ -19,7 +20,6 @@ type basetype =
     | Int64
     | Double
     | String
-    | Binary
 
 type constvalue     =
     | IntConst of int
@@ -27,16 +27,16 @@ type constvalue     =
     | ConstList of constvalue list option
     | ConstMap  of (constvalue * constvalue) option
 
-type fieldtype      =
+type field_type      =
     | FT_Ident of identifier
-    | FT_BaseType of basetype
+    | FT_BaseType of base_type
 
 type definition_type =
-    | DT_BaseType of basetype 
+    | DT_BaseType of base_type 
 
 type func_type =
-    | FuncType_Field of fieldtype
-    | FuncType_void
+    | FuncType_Field of field_type
+    | FuncType_Void
 
 type field_id =
     | FieldID of int
@@ -46,7 +46,7 @@ type field_req =
     | Optional
 
 type field =
-    | Field of (field_id option * field_req * fieldtype *
+    | Field of (field_id option * field_req * field_type *
                 (identifier * constvalue option)) 
 type throws =
     | Throws of field list option
@@ -65,13 +65,13 @@ type tstruct =
     | Struct of (identifier * field list option)
 
 type enum =
-    | Enum of (identifier * (identifier * int) list)
+    | Enum of (identifier * (identifier * int option) list option)
 
 type typedef =
     | Typedef of (definition_type * identifier)
 
 type const =
-    | Const of (fieldtype * identifier *  constvalue)
+    | Const of (field_type * identifier *  constvalue)
 
 type definition =
     | DF_Const of const
@@ -85,11 +85,11 @@ type document =
     | Definitions of (definition list)
 
 (* String Conversion Functions *)
-
 let string_of_ident (id: identifier) : string =
   let (Ident str) = id in str
+;;
 
-let string_of_basetype (bt: basetype) : string =
+let string_of_basetype (bt: base_type) : string =
   match bt with
   | Bool    -> "bool"
   | Int16   -> "short"
@@ -97,30 +97,11 @@ let string_of_basetype (bt: basetype) : string =
   | Int64   -> "long long"
   | Double  -> "float"
   | String  -> "char *"
-  | Binary  -> "char *"
+  | byte    -> "unsigned char"
 ;;
+
 let string_of_fieldreq req =
   match req with
   | Required -> "required"
   | Optional -> "optional"
-
-let string_of_field (f : field) : string =
- let Field (_, _, ftype, (id, _)) = f in
-  match ftype with
-  | FT_Ident id -> (string_of_ident id) ^ " " ^ (string_of_ident id)
-  | FT_BaseType bt -> (string_of_basetype bt) ^ " " ^ (string_of_ident id)
-
-
-let string_of_fieldlist (lst: field list option) : string =
-  let rec string_of_fields l =
-    match l with
-    | [] -> ""
-    | hd :: tl ->  (string_of_field hd) ^ "\n" ^ string_of_fields tl
-  in
-
-  match lst with
-  | None -> ""
-  | Some l -> string_of_fields l
 ;;
-
-

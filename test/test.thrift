@@ -1,9 +1,32 @@
 typedef i16 session_key
 typedef i32 session_id
 
-struct sname {
-  1: i16 member1
-  2: i32 member1
-  3: bool member3
-  4: byte member4
+
+enum Numberz
+{
+  ONE = 1,
+  TWO,
+  THREE,
+  FIVE = 5,
+  SIX,
+  EIGHT = 8,
+}
+
+struct stname {
+    1: string fname
+    2: string lname
+    3: i16  age
+    4: bool   m_or_f
+}
+
+struct address {
+    1: sname  nname 
+    2: string street
+    3: i32  zipcode   
+}
+
+service TestService {
+  oneway void  testVoid()
+  void testTowWayVoid ()
+  bool testTowWayVoid ()
 }
