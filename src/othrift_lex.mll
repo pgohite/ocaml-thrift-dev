@@ -32,6 +32,7 @@ let white = [' ' '\t']+
 let newline = '\r' | '\n' | "\r\n"
 let ident = ['a'-'z' 'A'-'Z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
 let func_ident = ident ['(']
+let separator  = [';' ',']
 
 rule read =
   parse
@@ -66,7 +67,7 @@ rule read =
   | '['         { LEFT_BRACK }
   | ']'         { RIGHT_BRACK }
   | ':'         { COLON }
-  | ','         { COMMA }
+	| separator   { LIST_SEPARATOR }
   | '='         { EQUAL }
 
   | _ { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf)) }

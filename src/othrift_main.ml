@@ -11,10 +11,8 @@ open Cthrift_gen
 open Lexing
 
 
-let rec gen_definition (lst: definition list) =
- let _ = CTHCC.generate_definitions (Definitions(lst)) in 
- ()
-
+let rec gen_definition (doclist: document list) =
+		CTHCC.generate_definitions doclist
 
 let print_position outx lexbuf =
   let pos = lexbuf.lex_curr_p in
@@ -30,19 +28,24 @@ let parse_with_error lexbuf =
     exit (-1)
 
 
-let rec parse_and_print lexbuf =
+let rec parse_and_print doclist lexbuf =
   match parse_with_error lexbuf with
-  | Some value ->
-    (match value with
-     | Definitions deflist -> let _ = gen_definition deflist in
-       parse_and_print lexbuf)
-  | None -> ()
+  | Some value -> parse_and_print (doclist @ value) lexbuf
+  | None -> doclist
 
 let main filename () =
   let inx = In_channel.create filename in
   let lexbuf = Lexing.from_channel inx in
   lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = filename };
-  parse_and_print lexbuf;
+	(* Parse thrift file *)
+  let doc_parsed = parse_and_print [] lexbuf in
+	
+	(* Resolve symbols *)
+	(* let doc_resolved = resolve_symbols doc_parsed in *)
+	
+	(*Generate definitions *)
+	let _ = gen_definition doc_parsed in
+	
   In_channel.close inx
 
       

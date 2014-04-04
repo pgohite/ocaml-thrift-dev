@@ -13,13 +13,13 @@ type literal =
     | Literal of string
 
 type base_type =
-    | Bool 
-    | Byte 
-    | Int16
-    | Int32
-    | Int64
-    | Double
-    | String
+  | Bool 
+  | Byte 
+  | Int16
+  | Int32
+  | Int64
+  | Double
+  | String
 
 type constvalue     =
     | IntConst of int
@@ -28,8 +28,8 @@ type constvalue     =
     | ConstMap  of (constvalue * constvalue) option
 
 type field_type      =
-    | FT_Ident of identifier
-    | FT_BaseType of base_type
+    | FT_CustomType of identifier
+    | FT_BaseType   of base_type
 
 type definition_type =
     | DT_BaseType of base_type 
@@ -81,8 +81,18 @@ type definition =
     | DF_Service of service
     | DF_Exception of exceptions
 
+type header =
+    | Includes
+		| Namespace
+
+type dictionary =
+    | TStruct of identifier
+		| TEnum of identifier
+
 type document =
-    | Definitions of (definition list)
+    | Definitions of definition
+		| Headers of header
+		| Dictionary of dictionary
 
 (* String Conversion Functions *)
 let string_of_ident (id: identifier) : string =
@@ -100,8 +110,27 @@ let string_of_basetype (bt: base_type) : string =
   | byte    -> "unsigned char"
 ;;
 
+let string_of_customtype (d: dictionary) : string =
+  match d with
+  | TStruct id -> "struct " ^ string_of_ident id
+  | TEnum   id -> "enum " ^ string_of_ident id
+;;
+
 let string_of_fieldreq req =
   match req with
   | Required -> "required"
   | Optional -> "optional"
 ;;
+
+(* After parsing document, we need to resolve symbols to their types. For*)
+(* example 'struct abc { ... }' may have beed referred in thrift definition*)
+(* so 'abc' must refer to struct abc in code generation. *)
+let rec othrift_find_symbol (doclist : document list) (id : identifier) =	
+	match doclist with
+	| [] -> failwith "Failed to resolve symbol"
+	| (Dictionary d) :: tl ->
+		(match d with
+		 | TStruct name
+	   | TEnum name ->
+			 if id = name then d else othrift_find_symbol tl id)
+	| _ :: tl ->  othrift_find_symbol tl id

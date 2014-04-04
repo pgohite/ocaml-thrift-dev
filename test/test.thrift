@@ -13,20 +13,22 @@ enum Numberz
 }
 
 struct stname {
-    1: string fname
-    2: string lname
-    3: i16  age
-    4: bool   m_or_f
+    1: string fname,
+    2: string lname,
+    3: i16  age,
+    4: bool   m_or_f,
 }
 
 struct address {
     1: sname  nname 
     2: string street
-    3: i32  zipcode   
+    3: i32  zipcode
 }
 
 service TestService {
-  oneway void  testVoid()
-  void testTowWayVoid ()
-  bool testTowWayVoid ()
+  oneway void  testVoid(),
+  void testTowWayVoid (),
+  bool testTowWayVoid (),
+  address testCustomReturn (1: i32 int32_arg, 2: string username, 3: Numberz nums),
+  oneway address testCustomReturn2 (1: i32 int32_arg, 2: string username)
 }
